@@ -1,0 +1,43 @@
+version: "3.9"
+
+# Shared volume definitions
+volumes:
+  rag-data:
+  rag-db:
+  rag-logs:
+  rag-results:
+
+services:
+
+  # ── Streamlit chat UI ───────────────────────────────────────────────────────
+  rag-ui:
+    build: .
+    container_name: rag-ui
+    ports:
+      - "8501:8501"
+    volumes:
+      - rag-data:/app/data
+      - rag-db:/app/db
+      - rag-logs:/app/logs
+      - rag-results:/app/results
+    environment:
+      - COHERE_API_KEY=${COHERE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    restart: unless-stopped
+
+  # ── FastAPI REST endpoint ───────────────────────────────────────────────────
+  rag-api:
+    build: .
+    container_name: rag-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - rag-data:/app/data
+      - rag-db:/app/db
+      - rag-logs:/app/logs
+    environment:
+      - COHERE_API_KEY=${COHERE_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+    command:
+      ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"]
+    restart: unless-stopped

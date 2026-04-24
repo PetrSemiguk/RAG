@@ -1,0 +1,14 @@
+# Development & testing dependencies
+# Install with: pip install -r requirements-dev.txt
+# These are intentionally lightweight — the unit-test suite
+# does NOT require torch / llama-index / qdrant.
+# Tests that need the full ML stack declare:
+#   pytest.importorskip("torch")  # and are skipped when not installed.
+
+pytest>=7.4
+pytest-cov>=4.1
+ruff>=0.3.0
+PyYAML>=6.0
+pydantic>=2.5.0
+python-dotenv>=1.0.0
+pandas>=2.0.0

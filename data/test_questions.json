@@ -1,0 +1,82 @@
+[
+  {
+    "id": "q01",
+    "question": "What is the Transformer architecture and how does it differ from recurrent networks?",
+    "ground_truth": "The Transformer is a model architecture relying entirely on attention mechanisms to draw global dependencies between input and output, dispensing with recurrence and convolutions entirely. Unlike RNNs, it processes all positions in parallel, enabling much faster training.",
+    "relevant_keywords": ["transformer", "attention", "recurrence", "recurrent", "parallel", "sequence"],
+    "category": "architecture",
+    "source_document": "1706.03762v7.pdf"
+  },
+  {
+    "id": "q02",
+    "question": "What is multi-head attention and why is it used?",
+    "ground_truth": "Multi-head attention runs the attention function h times in parallel with different learned linear projections, allowing the model to jointly attend to information from different representation subspaces at different positions.",
+    "relevant_keywords": ["multi-head", "attention", "heads", "parallel", "subspace", "projection"],
+    "category": "architecture",
+    "source_document": "1706.03762v7.pdf"
+  },
+  {
+    "id": "q03",
+    "question": "What is positional encoding in the Transformer model?",
+    "ground_truth": "Since the Transformer contains no recurrence or convolution, positional encodings are added to the input embeddings to inject information about the relative or absolute position of tokens in the sequence.",
+    "relevant_keywords": ["positional", "encoding", "position", "embedding", "sequence"],
+    "category": "architecture",
+    "source_document": "1706.03762v7.pdf"
+  },
+  {
+    "id": "q04",
+    "question": "What is retrieval-augmented generation (RAG)?",
+    "ground_truth": "Retrieval-Augmented Generation (RAG) combines a retrieval component that fetches relevant documents from a knowledge base with a language model that generates answers conditioned on those retrieved documents, reducing hallucinations and enabling access to up-to-date information.",
+    "relevant_keywords": ["retrieval", "augmented", "generation", "RAG", "knowledge", "documents"],
+    "category": "rag",
+    "source_document": "AI_ML_RAG_Guide.pdf"
+  },
+  {
+    "id": "q05",
+    "question": "What is hybrid search and how does it combine dense and sparse retrieval?",
+    "ground_truth": "Hybrid search combines dense vector search (semantic embeddings) with sparse keyword-based search (BM25) through score fusion techniques like reciprocal rank fusion, improving recall compared to using either method alone.",
+    "relevant_keywords": ["hybrid", "dense", "sparse", "BM25", "vector", "fusion", "retrieval"],
+    "category": "rag",
+    "source_document": "AI_ML_RAG_Guide.pdf"
+  },
+  {
+    "id": "q06",
+    "question": "What is vector similarity search and what distance metrics are used?",
+    "ground_truth": "Vector similarity search finds the nearest neighbours to a query embedding in a high-dimensional vector space. Common distance metrics include cosine similarity (angle between vectors), dot product, and Euclidean distance.",
+    "relevant_keywords": ["vector", "similarity", "cosine", "embedding", "distance", "nearest"],
+    "category": "rag",
+    "source_document": "AI_ML_RAG_Guide.pdf"
+  },
+  {
+    "id": "q07",
+    "question": "What is the role of embeddings in a RAG system?",
+    "ground_truth": "Embeddings encode text as dense numerical vectors that capture semantic meaning. In a RAG system they are used both to index document chunks into a vector store during ingestion and to encode user queries at retrieval time, enabling semantic search.",
+    "relevant_keywords": ["embedding", "vector", "semantic", "encode", "index", "chunk"],
+    "category": "rag",
+    "source_document": "AI_ML_RAG_Guide.pdf"
+  },
+  {
+    "id": "q08",
+    "question": "What is chunking and why does chunk size matter for RAG?",
+    "ground_truth": "Chunking splits documents into smaller segments before indexing. Chunk size affects the retrieval quality and context length: smaller chunks are more precise but may lose context, while larger chunks provide more context but may dilute relevance scores.",
+    "relevant_keywords": ["chunk", "chunking", "size", "split", "segment", "overlap"],
+    "category": "rag",
+    "source_document": "AI_ML_RAG_Guide.pdf"
+  },
+  {
+    "id": "q09",
+    "question": "What is the scaled dot-product attention formula?",
+    "ground_truth": "Scaled dot-product attention computes Attention(Q,K,V) = softmax(QK^T / sqrt(d_k)) * V, where Q are queries, K are keys, V are values, and d_k is the dimension of the keys. The scaling by sqrt(d_k) prevents vanishing gradients in high dimensions.",
+    "relevant_keywords": ["scaled", "dot-product", "attention", "softmax", "query", "key", "value", "dimension"],
+    "category": "architecture",
+    "source_document": "1706.03762v7.pdf"
+  },
+  {
+    "id": "q10",
+    "question": "What is a reranker and how does it improve retrieval quality?",
+    "ground_truth": "A reranker is a cross-encoder model that takes a query and a candidate document as joint input and scores their relevance more accurately than the initial bi-encoder retrieval. It is applied after initial retrieval to reorder the top-k candidates, improving precision at the cost of increased latency.",
+    "relevant_keywords": ["reranker", "cross-encoder", "rerank", "precision", "relevance", "candidate"],
+    "category": "rag",
+    "source_document": "AI_ML_RAG_Guide.pdf"
+  }
+]

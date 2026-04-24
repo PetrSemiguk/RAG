@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Tests & coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Data & DB (don't commit user documents or auto-generated stores)
+data/*.pdf
+db/
+logs/
+results/
+
+# Secrets / local config
+.env
+*.env.*
+*.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# MLflow runs
+mlruns/
+
+# Claude Code local settings
+.claude/

@@ -1,0 +1,42 @@
+# Core RAG Dependencies
+llama-index==0.10.0
+llama-index-core==0.10.0
+llama-index-llms-openai==0.1.0
+llama-index-embeddings-huggingface==0.2.0
+llama-index-vector-stores-qdrant==0.2.0
+
+# Optional: Hybrid Search (BM25)
+llama-index-retrievers-bm25==0.1.0
+
+# Optional: Reranking
+llama-index-postprocessor-cohere-rerank==0.1.0
+
+# Vector Store
+qdrant-client==1.7.0
+
+# Embeddings
+sentence-transformers==2.3.1
+torch>=2.0.0
+
+# UI
+streamlit==1.30.0
+
+# Configuration & Utils
+pydantic==2.5.0
+python-dotenv==1.0.0
+PyYAML>=6.0
+
+# Document Processing
+pypdf==3.17.4
+
+# Evaluation & Experiment Tracking
+pandas>=2.0.0
+matplotlib>=3.7.0
+
+# Notebooks
+notebook>=7.0.0
+ipykernel>=6.0.0
+
+# REST API (optional — needed for api.py / Docker)
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0

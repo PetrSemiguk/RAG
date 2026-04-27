@@ -1,13 +1,11 @@
 # Advanced RAG System
 
-[![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions)
+[![CI](https://github.com/PetrSemiguk/RAG/actions/workflows/ci.yml/badge.svg)](https://github.com/PetrSemiguk/RAG/actions)
 [![Python](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](https://python.org)
 [![LlamaIndex](https://img.shields.io/badge/LlamaIndex-0.10-FF6B6B)](https://docs.llamaindex.ai)
 [![Qdrant](https://img.shields.io/badge/Qdrant-1.7-6C5CE7)](https://qdrant.tech)
-[![FastAPI](https://img.shields.io/badge/FastAPI-REST_API-009688?logo=fastapi)](api.py)
+[![Streamlit](https://img.shields.io/badge/Streamlit-UI-FF4B4B?logo=streamlit)](https://streamlit.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-22C55E)](LICENSE)
-
-> **Replace** `YOUR_USERNAME/YOUR_REPO` in the CI badge with your GitHub username and repository name.
 
 A production-grade Retrieval-Augmented Generation pipeline built with LlamaIndex, Qdrant, and Streamlit. The system retrieves relevant context from PDF documents using hybrid dense + sparse search and synthesises answers with a local or cloud LLM.
 
@@ -15,14 +13,11 @@ A production-grade Retrieval-Augmented Generation pipeline built with LlamaIndex
 
 ## Demo
 
-<!-- After running `streamlit run app.py`, capture the Chat and Dashboard tabs.
-     Save screenshots as docs/chat.png and docs/dashboard.png, then uncomment: -->
-
 | Chat Interface | Analytics Dashboard |
 |---|---|
 | ![Chat](docs/chat.png) | ![Dashboard](docs/dashboard.png) |
 
-> To generate the screenshots: `streamlit run app.py` → open `http://localhost:8501`
+> Run `streamlit run app.py` → open `http://localhost:8501` to generate screenshots.
 
 ---
 
@@ -51,7 +46,7 @@ A production-grade Retrieval-Augmented Generation pipeline built with LlamaIndex
 │  ┌─────────────────────────▼────────────────────────────────┐   │
 │  │              Post-processors                             │   │
 │  │  SimilarityPostprocessor (≥0.6, vector-only)             │   │
-│  │  AdaptiveContextManager  (token-count guard)             │   │
+│  │  AdaptiveContextManager  (token-count guard, ≤2048)      │   │
 │  │  CohereRerank            (optional, paid API)            │   │
 │  └─────────────────────────┬────────────────────────────────┘   │
 │                            │ top-N nodes                        │
@@ -87,7 +82,7 @@ A production-grade Retrieval-Augmented Generation pipeline built with LlamaIndex
 │                                 Context Precision/Recall        │
 │                                                                 │
 │  ExperimentTracker → results/experiments.jsonl                  │
-│  notebooks/experiments.ipynb → comparison plots                 │
+│  Dashboard (app.py) → in-app evaluation with live progress      │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -109,38 +104,111 @@ This gives accurate, source-cited answers without fine-tuning and without sendin
 
 | Decision | Choice | Justification |
 |---|---|---|
-| Embedding model | `BAAI/bge-small-en-v1.5` (384-dim) | Best-in-class for its size; runs on CPU in <1 s/chunk. Larger models (e.g., `bge-large`) add latency with marginal gains on short technical text. |
-| Vector DB | Qdrant (local file mode) | Zero-ops setup, HNSW indexing, metadata filtering. Scales to millions of vectors on a laptop. |
-| Chunking | SentenceSplitter (512 chars, 50 overlap) | Sentence boundaries preserve coherent context. Fixed-size splitting is faster but cuts mid-sentence, hurting faithfulness. |
-| Hybrid search | BM25 + Vector (RRF fusion) | BM25 catches exact-match keywords (acronyms, names) that embeddings miss. RRF combines rankings without score normalisation. |
-| LLM interface | OpenAI-compatible API | Works with LM Studio (local), OpenAI, or any compatible server — swap via `config.yaml`, no code changes. |
-| Reranking | Cross-encoder / Cohere (opt-in) | Rerankers improve precision on the final top-N but add latency; disabled by default, configurable. |
+| Embedding model | `BAAI/bge-small-en-v1.5` (384-dim) | Best-in-class for its size; runs on CPU in <1 s/chunk. |
+| Vector DB | Qdrant (local file mode) | Zero-ops setup, HNSW indexing, metadata filtering. |
+| Chunking | SentenceSplitter (512 chars, 50 overlap) | Sentence boundaries preserve coherent context. |
+| Hybrid search | BM25 + Vector (RRF fusion) | BM25 catches exact-match keywords that embeddings miss. |
+| LLM interface | OpenAI-compatible API | Works with LM Studio (local), OpenAI, or any compatible server. |
+| Reranking | Cross-encoder / Cohere (opt-in) | Improves precision on final top-N; disabled by default. |
 
 ---
 
 ## Evaluation Results
 
-Evaluated on 10 curated questions from the Transformer paper and an RAG guide (see `data/test_questions.json`).
+Tested on two real-world financial 10-K filings:
+- **Nike 10-K 2025** (`Nike-Inc-2025_10K.pdf`)
+- **Tesla 10-K 2023** (`tsla-20231231-gen.pdf`)
 
-### Retrieval Quality (k=5, sentence chunking, hybrid search)
+### RAGAS Metrics — Nike 10-K (10 questions, hybrid search, k=10)
 
-| Metric | Score | What it means |
+| Metric | Score | Interpretation |
 |---|---|---|
-| Hit Rate@5 | ≥ 0.80 | ≥80 % of questions have a relevant chunk in the top 5 |
-| MRR | ≥ 0.65 | Relevant chunk appears near rank 1 on average |
-| NDCG@5 | ≥ 0.70 | Strong ranking quality across all positions |
+| Hit Rate@10 | **1.00** | Correct chunk found in top-10 for all 10 questions |
+| MRR | **0.93** | Correct chunk ranked #1 in the majority of cases |
+| NDCG@10 | **0.93** | Strong ranking quality across all positions |
+| Faithfulness | **0.56** | Answers grounded in context; room to improve with better reranking |
 
-### Answer Quality (RAGAS-style, hybrid + LM Studio)
+### Manual Q&A Accuracy — Nike 10-K 2025 (single-document mode)
 
-| Metric | Score | What it means |
+**8 / 12 correct (67%)**
+
+| Question | Result |
+|---|---|
+| Total revenues ($46.3B) | ✅ |
+| US revenue percentage (43%) | ✅ |
+| NIKE Direct decline ($2.7B) | ✅ |
+| Gross margin (42.7%, -190bps) | ✅ |
+| Apparel countries (Vietnam/China/Cambodia) | ✅ |
+| Apparel factories (303 factories, 34 countries) | ✅ |
+| Headquarters (Beaverton, Oregon) | ✅ |
+| NIKE Direct decline details | ✅ |
+| Employee count (77,800) | ❌ |
+| Footwear countries (Vietnam/Indonesia/China) | ❌ |
+| Operating overhead details | ❌ |
+| Fiscal 2026 gross margin outlook | ❌ |
+
+### Manual Q&A Accuracy — Tesla 10-K 2023 (single-document mode)
+
+**5 / 12 correct (42%)**
+
+| Question | Result |
+|---|---|
+| Total revenues ($96.77B) | ✅ |
+| Net income ($15.00B) | ✅ |
+| Cash & investments ($29.09B) | ✅ |
+| Revenue increase ($15.31B) | ✅ |
+| Operating cash flow ($13.26B) | ✅ |
+| Employee count (140,473) | ❌ |
+| Headquarters (Austin, Texas) | ❌ |
+| Ticker symbol (TSLA, Nasdaq) | ❌ |
+| Automotive gross margin (18.2%) | ❌ |
+| Capital expenditure ($8.90B) | ❌ |
+| Gigafactory countries | ❌ |
+| New Gigafactory location (Mexico) | ❌ |
+
+### Multi-Document Mode (Nike + Tesla simultaneously)
+
+**3 / 10 correct (30%)**
+
+- System correctly routes Nike questions to Nike document.
+- Tesla questions occasionally retrieve Nike chunks instead.
+- Financial summary facts work well across both documents.
+
+### Analysis
+
+Financial metrics embedded in prose (revenue totals, margins, cash flows) are retrieved reliably because they appear repeatedly in summary sections. HR and operational facts (employee counts, headquarters, ticker symbols) score lower because they are often found in short, isolated sentences that rank below denser financial paragraphs in semantic search. Table-heavy pages present a similar challenge — financial tables are split across chunk boundaries, diluting their signal.
+
+---
+
+## Known Limitations
+
+**1. HR and operational facts retrieved less reliably than financial metrics**
+
+Employee counts, headquarters addresses, and ticker symbols score lower in semantic search. Financial tables and prose summaries dominate the embedding space because they repeat key figures across multiple sections.
+
+**2. Multi-document search without explicit routing**
+
+When multiple documents are loaded simultaneously, queries about one company may retrieve chunks from another company's document. Best results are achieved when the user selects a specific document in the sidebar scope filter.
+
+**3. Table-heavy pages score lower in semantic search**
+
+Chunks containing financial tables are harder to retrieve because table content is split across chunk boundaries. Table-aware chunking would preserve tabular context as single units.
+
+**4. Local LLM limitations**
+
+Tested with `meta-llama-3.1-8b-instruct` (4096 context). Context overflow occurs on complex multi-part questions. GPT-4o-mini produces noticeably higher quality answers on the same retrieved context.
+
+---
+
+## Planned Improvements
+
+| Priority | Improvement | Expected Impact |
 |---|---|---|
-| Answer Relevancy | ≥ 0.70 | Answers are topically aligned with questions |
-| Faithfulness | ≥ 0.75 | Answers grounded in retrieved context, not hallucinated |
-| Context Precision | ≥ 0.60 | Retrieved chunks are relevant to the question |
-| Context Recall | ≥ 0.65 | Retrieved chunks cover the ground-truth information |
-
-> Run `python evaluate.py --retrieval-only` to reproduce retrieval metrics.
-> Run `python evaluate.py` with LM Studio running to reproduce all metrics.
+| High | **Document Router** — detect which document is relevant before retrieval when multiple documents are loaded | Fixes multi-document cross-contamination |
+| High | **Table-Aware Chunking** — detect and preserve financial tables as single chunks | Improves retrieval of tabular facts |
+| Medium | **Larger Embedding Model** — upgrade from `bge-small-en-v1.5` (384-dim) to `bge-large-en-v1.5` (1024-dim) | Better semantic matching on operational facts |
+| Medium | **Cross-Encoder Reranking tuning** — already implemented, needs threshold calibration for operational questions | Higher precision on HR/operational facts |
+| Low | **Extended Evaluation Pipeline** — expand RAGAS evaluation to cover both financial and operational question types systematically | More reliable benchmark signal |
 
 ---
 
@@ -150,6 +218,7 @@ Evaluated on 10 curated questions from the Transformer paper and an RAG guide (s
 - Python 3.10+
 - [LM Studio](https://lmstudio.ai) running at `http://localhost:1234/v1` with any model loaded (for answer generation)
 - PDF files placed in `data/`
+- Optional: `COHERE_API_KEY` env var to enable reranking
 
 ### Install
 
@@ -163,7 +232,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Ingest documents
+### Ingest Documents
 
 ```bash
 # First run — build index from scratch
@@ -173,14 +242,34 @@ python src/ingestor.py --data-dir data --db-path db --recreate
 python src/ingestor.py --data-dir data --db-path db
 ```
 
-### Run the app
+### Run the App
 
 ```bash
 streamlit run app.py
 # Opens at http://localhost:8501
 ```
 
-### Run evaluation
+---
+
+## How to Run Evaluation
+
+The app ships with a built-in RAGAS evaluation dashboard. No separate script is needed.
+
+### In-app evaluation (recommended)
+
+1. Start the app: `streamlit run app.py`
+2. Open the **Dashboard** tab → **evaluation** sub-tab.
+3. Ensure `data/test_questions.json` exists (or click **Generate from documents** to auto-generate questions with the LLM).
+4. Tick **+RAGAS** to include answer-quality metrics (requires LM Studio running with a model loaded).
+5. Click **▶ Run** — progress is shown live and results are saved to `results/experiments.jsonl`.
+
+The dashboard displays:
+- **Hit Rate@K**, **MRR**, **NDCG@K** — retrieval quality metrics
+- **Faithfulness**, **Answer Relevancy**, **Context Precision**, **Context Recall** — answer quality (RAGAS, when enabled)
+- Per-question breakdown showing which questions hit or missed
+- **Compare** tab for side-by-side metric bars across multiple runs
+
+### CLI evaluation
 
 ```bash
 # Retrieval metrics only (no LLM needed)
@@ -189,55 +278,26 @@ python evaluate.py --retrieval-only --tag baseline
 # Full eval including answer quality (LM Studio must be running)
 python evaluate.py --tag my_experiment
 
-# Custom config (compare chunking strategies)
+# Compare chunking strategies
 python evaluate.py --retrieval-only --tag fixed_256
 ```
 
-### REST API (FastAPI)
+### Adding your own evaluation questions
 
-Exposes the engine over HTTP so any frontend or service can query it.
+Edit `data/test_questions.json`. Each entry follows this schema:
 
-```bash
-uvicorn api:app --reload
-# API docs at http://localhost:8000/docs
+```json
+{
+  "id": "q001",
+  "question": "What were Nike's total revenues in fiscal 2025?",
+  "ground_truth": "$46.3 billion",
+  "relevant_keywords": ["revenue", "46.3", "fiscal 2025"],
+  "category": "financial",
+  "source_document": "Nike-Inc-2025_10K.pdf"
+}
 ```
 
-Example requests:
-
-```bash
-# Health check
-curl http://localhost:8000/health
-
-# List indexed documents
-curl http://localhost:8000/documents
-
-# Ask a question
-curl -X POST http://localhost:8000/query \
-  -H "Content-Type: application/json" \
-  -d '{"question": "What is multi-head attention?"}'
-```
-
-### Docker
-
-```bash
-# Build and start both UI + API
-docker compose up --build
-
-# UI → http://localhost:8501
-# API → http://localhost:8000/docs
-```
-
-### View observability metrics
-
-```bash
-python -m src.observability.metrics --db logs/queries.db --recent 20
-```
-
-### Open the experiment notebook
-
-```bash
-jupyter notebook notebooks/experiments.ipynb
-```
+The `relevant_keywords` field is used for keyword-overlap hit detection when ground-truth chunk IDs are not available.
 
 ---
 
@@ -269,39 +329,24 @@ reranking:
 
 ```
 RAG/
-├── app.py                          Streamlit chat interface
-├── api.py                          FastAPI REST endpoints (/query, /documents, /health)
-├── evaluate.py                     Unified evaluation runner
+├── app.py                          Streamlit chat + dashboard UI
+├── evaluate.py                     CLI evaluation runner
 ├── config.yaml                     All hyperparameters
 ├── requirements.txt                Runtime dependencies
-├── requirements-dev.txt            Test-only dependencies (no ML stack)
-├── Dockerfile                      Multi-stage image (CPU torch, <2 GB)
-├── docker-compose.yml              UI + API services
-├── pyproject.toml                  pytest / ruff / coverage config
-├── .github/
-│   └── workflows/ci.yml            CI: lint + tests on Python 3.10 & 3.11
-├── tests/
-│   ├── test_utils.py               StructuredLogger, ensure_dir, load_yaml
-│   ├── test_benchmark.py           Hit Rate, MRR, NDCG computation
-│   ├── test_experiment_tracker.py  JSONL persistence, best-run selection
-│   ├── test_query_logger.py        SQLite logging, summary statistics
-│   └── test_config.py              RAGConfig validation (skipped without torch)
 ├── data/
 │   ├── *.pdf                       Source documents
-│   └── test_questions.json         10 curated evaluation questions
+│   └── test_questions.json         Curated evaluation questions
 ├── db/                             Qdrant vector store (auto-created)
 ├── logs/
 │   └── queries.db                  SQLite query log
 ├── results/
 │   ├── experiments.jsonl           All experiment runs (append-only)
 │   └── run_*.json                  Individual run reports
-├── notebooks/
-│   └── experiments.ipynb           Metric comparison visualisations
 └── src/
     ├── config.py                   RAGConfig (Pydantic) + ModelProvider
     ├── engine.py                   RAGQueryEngine, strategy classes
     ├── ingestor.py                 DocumentIngestor, chunking strategies
-    ├── experiment_tracker.py       JSON + optional MLflow tracking
+    ├── experiment_tracker.py       JSON experiment tracking
     ├── utils.py                    StructuredLogger, ensure_dir
     ├── evaluation/
     │   ├── benchmark.py            Hit Rate, MRR, NDCG
@@ -310,21 +355,3 @@ RAG/
         ├── query_logger.py         SQLite query persistence
         └── metrics.py              CLI metrics viewer
 ```
-
----
-
-## What I Would Improve Next
-
-1. **Semantic chunking** — Segment documents by topic using embedding-based breakpoint detection (`SemanticSplitterNodeParser` in LlamaIndex). Expected to improve context recall on long documents.
-
-2. **Larger embedding model** — Swap to `BAAI/bge-large-en-v1.5` (1024-dim) or an instruction-tuned model like `e5-mistral-7b-instruct` for better semantic matching on technical text.
-
-3. **HNSW tuning** — Expose `m` and `ef_construction` parameters for the Qdrant HNSW index. Higher values improve recall at the cost of indexing time.
-
-4. **Ground-truth labelling** — Replace keyword-overlap relevance with manually labelled chunk IDs for more precise Hit Rate and NDCG computation.
-
-5. **Latency profiling** — Add per-stage timing (embedding, retrieval, reranking, synthesis) to identify bottlenecks for production SLA targets.
-
-6. **Streaming responses** — Wire LlamaIndex streaming to Streamlit's `st.write_stream` for lower perceived latency on longer answers.
-
-7. **Multi-vector retrieval** — Index both chunk-level and document-level summaries (ColBERT-style late interaction) to improve recall on broad questions that span multiple chunks.

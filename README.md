@@ -69,7 +69,7 @@ A production-grade Retrieval-Augmented Generation pipeline built with LlamaIndex
 │                  ├── SentenceSplitter  (strategy: "sentence")   │
 │                  └── TokenTextSplitter (strategy: "fixed")      │
 │                          └── HuggingFace Embeddings             │
-│                              (BAAI/bge-small-en-v1.5, GPU-aware)│
+│                              (BAAI/bge-base-en-v1.5, GPU-aware) │
 │                                  └── Qdrant VectorStore (db/)   │
 └─────────────────────────────────────────────────────────────────┘
 
@@ -104,7 +104,7 @@ This gives accurate, source-cited answers without fine-tuning and without sendin
 
 | Decision | Choice | Justification |
 |---|---|---|
-| Embedding model | `BAAI/bge-small-en-v1.5` (384-dim) | Best-in-class for its size; runs on CPU in <1 s/chunk. |
+| Embedding model | `BAAI/bge-base-en-v1.5` (768-dim) | Strong retrieval quality; runs on CPU in <1 s/chunk, GPU-accelerated on CUDA. |
 | Vector DB | Qdrant (local file mode) | Zero-ops setup, HNSW indexing, metadata filtering. |
 | Chunking | SentenceSplitter (512 chars, 50 overlap) | Sentence boundaries preserve coherent context. |
 | Hybrid search | BM25 + Vector (RRF fusion) | BM25 catches exact-match keywords that embeddings miss. |
@@ -206,7 +206,7 @@ Tested with `meta-llama-3.1-8b-instruct` (4096 context). Context overflow occurs
 |---|---|---|
 | High | **Document Router** — detect which document is relevant before retrieval when multiple documents are loaded | Fixes multi-document cross-contamination |
 | High | **Table-Aware Chunking** — detect and preserve financial tables as single chunks | Improves retrieval of tabular facts |
-| Medium | **Larger Embedding Model** — upgrade from `bge-small-en-v1.5` (384-dim) to `bge-large-en-v1.5` (1024-dim) | Better semantic matching on operational facts |
+| Medium | **Larger Embedding Model** — upgrade from `bge-base-en-v1.5` (768-dim) to `bge-large-en-v1.5` (1024-dim) | Better semantic matching on operational facts |
 | Medium | **Cross-Encoder Reranking tuning** — already implemented, needs threshold calibration for operational questions | Higher precision on HR/operational facts |
 | Low | **Extended Evaluation Pipeline** — expand RAGAS evaluation to cover both financial and operational question types systematically | More reliable benchmark signal |
 

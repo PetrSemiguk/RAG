@@ -15,7 +15,7 @@ A production-grade Retrieval-Augmented Generation pipeline built with LlamaIndex
 
 | Chat Interface | Analytics Dashboard |
 |---|---|
-| ![Chat](docs/chat.jpg) | ![Dashboard](docs/dashboard.png) |
+| ![Chat](docs/chat.jpg) | ![Dashboard](docs/dashboard.jpg) |
 
 > Run `streamlit run app.py` → open `http://localhost:8501` to generate screenshots.
 
